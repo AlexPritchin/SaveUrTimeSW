@@ -11,16 +11,31 @@ import CoreData
 
 class DBWorkerCoreData: NSObject {
 
+    static let shared = DBWorkerCoreData()
+    
     private var dbContext : NSManagedObjectContext
     
     override init(){
         let manager = FileManager()
-        var fileURL = try? manager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-        fileURL = fileURL?.appendingPathComponent("TasksDatabaseCoreData.sqlite")
-        let storeCoordinator = NSPersistentStoreCoordinator.init(managedObjectModel: NSManagedObjectModel.mergedModel(from: [Bundle.main])!)
-        try! storeCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: fileURL, options: [NSMigratePersistentStoresAutomaticallyOption : true])
         dbContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        dbContext.persistentStoreCoordinator = storeCoordinator
+        var fileURL : URL
+        do {
+            fileURL = try manager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            fileURL = fileURL.appendingPathComponent("TasksDatabaseCoreData.sqlite")
+        }
+        catch {
+            super.init()
+            return
+        }
+        let storeCoordinator = NSPersistentStoreCoordinator.init(managedObjectModel: NSManagedObjectModel.mergedModel(from: [Bundle.main])!)
+        do {
+            try storeCoordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: fileURL, options: [NSMigratePersistentStoresAutomaticallyOption : true])
+            dbContext.persistentStoreCoordinator = storeCoordinator
+        }
+        catch {
+            super.init()
+            return
+        }
         super.init()
     }
     
@@ -29,12 +44,18 @@ class DBWorkerCoreData: NSObject {
         var selectedTask = Task()
         let sortStatus = NSSortDescriptor.init(key: "status", ascending: true)
         let sortModified = NSSortDescriptor.init(key: "modified", ascending: true)
-        let predicate = NSPredicate.init(format: "status <> %i", argumentArray: [TaskStatus.TASK_STATUS_DELETED.rawValue])
+        let predicate = NSPredicate.init(format: "status <> %i", argumentArray: [TaskStatus.deleted.rawValue])
         let request = NSFetchRequest<NSFetchRequestResult>.init(entityName: "Task")
         request.predicate = predicate
         request.sortDescriptors = [sortStatus, sortModified]
-        let tasks = try? dbContext.fetch(request) as! [NSManagedObject]
-        for task in tasks! {
+        let tasks : [NSManagedObject]
+        do {
+            tasks = try dbContext.fetch(request) as! [NSManagedObject]
+        }
+        catch {
+            tasks = [NSManagedObject]()
+        }
+        for task in tasks {
             selectedTask = Task()
             selectedTask.title = task.value(forKey: "title") as? String
             selectedTask.descriptionText = task.value(forKey:"taskdescription") as? String
@@ -43,15 +64,24 @@ class DBWorkerCoreData: NSObject {
             selectedTask.status = task.value(forKey:"status") as? Int
             resultArray.append(selectedTask)
         }
-        return resultArray;
+        return resultArray
     }
     
     func selectTask(taskCreatedDate: String) -> NSManagedObject{
         let request = NSFetchRequest<NSFetchRequestResult>.init(entityName: "Task")
         let predicate = NSPredicate.init(format: "created = %@", argumentArray: [taskCreatedDate])
         request.predicate = predicate
-        let tasks = try? dbContext.fetch(request) as! [NSManagedObject]
-        return tasks![0]
+        let tasks : [NSManagedObject]
+        do {
+            tasks = try dbContext.fetch(request) as! [NSManagedObject]
+        }
+        catch {
+            return NSManagedObject()
+        }
+        guard let selectedTask = tasks.first else {
+            return NSManagedObject()
+        }
+        return selectedTask
     }
     
     func add(newTask: Task){
@@ -61,22 +91,42 @@ class DBWorkerCoreData: NSObject {
         newMOTask.setValue(newTask.createdDate, forKey: "created")
         newMOTask.setValue(newTask.modifiedDate, forKey: "modified")
         newMOTask.setValue(newTask.status, forKey:"status")
-        try? dbContext.save()
+        do {
+            try dbContext.save()
+        }
+        catch {
+            NSLog("Error while saving")
+        }
     }
     
     func update(existingTask: Task){
-        let MOTask = self.selectTask(taskCreatedDate: existingTask.createdDate!)
-        MOTask.setValue(existingTask.title, forKey:"title")
-        MOTask.setValue(existingTask.descriptionText, forKey:"taskdescription")
-        MOTask.setValue(existingTask.modifiedDate, forKey:"modified")
-        MOTask.setValue(existingTask.status, forKey:"status")
-        try? dbContext.save()
+        if let existingTaskCreateDate = existingTask.createdDate {
+            let MOTask = self.selectTask(taskCreatedDate: existingTaskCreateDate)
+            MOTask.setValue(existingTask.title, forKey:"title")
+            MOTask.setValue(existingTask.descriptionText, forKey:"taskdescription")
+            MOTask.setValue(existingTask.modifiedDate, forKey:"modified")
+            MOTask.setValue(existingTask.status, forKey:"status")
+            do {
+                try dbContext.save()
+            }
+            catch {
+                NSLog("Error while saving")
+            }
+        }
+        else {
+            return
+        }
     }
     
     func remove(existingTaskCreatedDate: String){
         let MOTask = self.selectTask(taskCreatedDate: existingTaskCreatedDate)
-        MOTask.setValue(TaskStatus.TASK_STATUS_DELETED.rawValue, forKey:"status")
-        try? dbContext.save()
+        MOTask.setValue(TaskStatus.deleted.rawValue, forKey:"status")
+        do {
+            try dbContext.save()
+        }
+        catch {
+            NSLog("Error while saving")
+        }
     }
     
 }

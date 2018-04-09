@@ -33,18 +33,24 @@ class TaskTableViewCell: UITableViewCell {
     func loadData(taskForLoadData: Task){
         self.modifiedDateLabel.text = taskForLoadData.modifiedDate
         self.titleLabel.text = taskForLoadData.title
-        if taskForLoadData.status! == TaskStatus.TASK_STATUS_COMPLETED.rawValue {
+        if let taskForLoadDataStatus = taskForLoadData.status {
+            if taskForLoadDataStatus == TaskStatus.completed.rawValue {
                 self.setLabelsTextStrikeout()
+            }
         }
     }
     
     func setLabelsTextStrikeout(){
-        let strikeoutTextDate = NSMutableAttributedString.init(string: self.modifiedDateLabel.text!)
-        strikeoutTextDate.addAttribute(NSStrikethroughStyleAttributeName, value: NSUnderlineStyle.styleSingle.rawValue, range: NSMakeRange(0, strikeoutTextDate.length))
-        self.modifiedDateLabel.attributedText = strikeoutTextDate
-        let strikeoutTextTitle = NSMutableAttributedString.init(string: self.titleLabel.text!)
-        strikeoutTextTitle.addAttribute(NSStrikethroughStyleAttributeName, value: NSUnderlineStyle.styleSingle.rawValue, range: NSMakeRange(0, strikeoutTextTitle.length))
-        self.titleLabel.attributedText = strikeoutTextTitle
+        if let modifiedDateLabelText = self.modifiedDateLabel.text {
+            let strikeoutTextDate = NSMutableAttributedString.init(string: modifiedDateLabelText)
+            strikeoutTextDate.addAttribute(NSStrikethroughStyleAttributeName, value: NSUnderlineStyle.styleSingle.rawValue, range: NSMakeRange(0, strikeoutTextDate.length))
+            self.modifiedDateLabel.attributedText = strikeoutTextDate
+        }
+        if let titleLabelText = self.titleLabel.text {
+            let strikeoutTextTitle = NSMutableAttributedString.init(string: titleLabelText)
+            strikeoutTextTitle.addAttribute(NSStrikethroughStyleAttributeName, value: NSUnderlineStyle.styleSingle.rawValue, range: NSMakeRange(0, strikeoutTextTitle.length))
+            self.titleLabel.attributedText = strikeoutTextTitle
+        }
     }
 
 }

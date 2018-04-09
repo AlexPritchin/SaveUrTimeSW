@@ -18,32 +18,40 @@ class TasksDetailViewController: UIViewController {
     @IBOutlet weak var editButton: UIBarButtonItem!
     
     var taskToDisplay: Task?
-    var taskMode: Int?
-    var dbWork: DBWorkerCoreData?
+    var taskMode: TaskWorkMode = .undefined
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if self.taskMode == TaskWorkMode.TASK_WORK_MODE_NEW.rawValue {
-            self.saveButton.isEnabled = true
-            self.editButton.isEnabled = false
-            self.modifiedDateLabel.isHidden = true
-            self.statusLabel.isHidden = true
-            self.setBorderFor(textView: self.titleTextView, color: UIColor.gray)
-            self.setBorderFor(textView: self.descriptionTextView, color:UIColor.gray)
-        }
-        else if self.taskMode == TaskWorkMode.TASK_WORK_MODE_VIEW.rawValue {
-            self.modifiedDateLabel.text = self.taskToDisplay!.modifiedDate
-            switch self.taskToDisplay!.status! {
-                case TaskStatus.TASK_STATUS_ACTIVE.rawValue: self.statusLabel.text = TASK_STATUS_ACTIVE_STR
-                case TaskStatus.TASK_STATUS_COMPLETED.rawValue: self.statusLabel.text = TASK_STATUS_COMPLETED_STR
-                    self.editButton.isEnabled = false
-                default: break
-            }
-            self.titleTextView.text = self.taskToDisplay!.title
-            self.descriptionTextView.text = self.taskToDisplay!.descriptionText
-            self.titleTextView.isEditable = false;
-            self.descriptionTextView.isEditable = false;
+        switch self.taskMode {
+            case .new: self.saveButton.isEnabled = true
+                self.editButton.isEnabled = false
+                self.modifiedDateLabel.isHidden = true
+                self.statusLabel.isHidden = true
+                self.setBorderFor(textView: self.titleTextView, color: UIColor.gray)
+                self.setBorderFor(textView: self.descriptionTextView, color:UIColor.gray)
+            case .view: if let taskToDispl = self.taskToDisplay {
+                if let taskToDisplModDate = taskToDispl.modifiedDate {
+                    self.modifiedDateLabel.text = taskToDisplModDate
+                }
+                if let taskToDisplStatus = taskToDispl.status {
+                    switch taskToDisplStatus {
+                        case TaskStatus.active.rawValue: self.statusLabel.text = TaskStatusStr.active
+                        case TaskStatus.completed.rawValue: self.statusLabel.text = TaskStatusStr.completed
+                            self.editButton.isEnabled = false
+                        default: break
+                    }
+                }
+                if let taskToDisplTitle = taskToDispl.title {
+                    self.titleTextView.text = taskToDisplTitle
+                }
+                if let taskToDisplDescrText = taskToDispl.descriptionText {
+                    self.descriptionTextView.text = taskToDisplDescrText
+                }
+                    }
+                self.titleTextView.isEditable = false
+                self.descriptionTextView.isEditable = false
+            case .undefined, .edit: break
         }
     }
 
@@ -62,32 +70,32 @@ class TasksDetailViewController: UIViewController {
             if self.descriptionTextView.text == "" {
                 self.setBorderFor(textView: self.descriptionTextView, color:UIColor.red)
             }
-            return;
+            return
         }
-        if self.taskMode == TaskWorkMode.TASK_WORK_MODE_NEW.rawValue {
-            let newTask = Task()
-            newTask.title = self.titleTextView.text
-            newTask.descriptionText = self.descriptionTextView.text
-            let dtFormat = DateFormatter()
-            dtFormat.dateFormat = TASK_DATETIME_FORMAT
-            newTask.createdDate = dtFormat.string(from: Date())
-            newTask.modifiedDate = newTask.createdDate
-            newTask.status = TaskStatus.TASK_STATUS_ACTIVE.rawValue
-            self.dbWork!.add(newTask: newTask)
+        switch self.taskMode {
+            case .new: let newTask = Task()
+                newTask.title = self.titleTextView.text
+                newTask.descriptionText = self.descriptionTextView.text
+                newTask.createdDate = Date().getformatString(fromDate: Date(), formatPlace: DateFormatPlace.taskDetail)
+                newTask.modifiedDate = newTask.createdDate
+                newTask.status = TaskStatus.active.rawValue
+                DBWorkerCoreData.shared.add(newTask: newTask)
+        case .edit: guard let taskToDispl = self.taskToDisplay else{
+                    break
+                }
+                taskToDispl.title = self.titleTextView.text
+                taskToDispl.descriptionText = self.descriptionTextView.text
+                taskToDispl.modifiedDate = Date().getformatString(fromDate: Date(), formatPlace: DateFormatPlace.taskDetail)
+                DBWorkerCoreData.shared.update(existingTask: taskToDispl)
+            case .undefined, .view: break
         }
-        else if self.taskMode == TaskWorkMode.TASK_WORK_MODE_EDIT.rawValue {
-            self.taskToDisplay!.title = self.titleTextView.text;
-            self.taskToDisplay!.descriptionText = self.descriptionTextView.text;
-            let dtFormat = DateFormatter()
-            dtFormat.dateFormat = TASK_DATETIME_FORMAT
-            self.taskToDisplay!.modifiedDate = dtFormat.string(from: Date())
-            self.dbWork!.update(existingTask: self.taskToDisplay!)
+        if let selfNavigationContr = self.navigationController {
+            selfNavigationContr.popToRootViewController(animated: true)
         }
-        self.navigationController!.popToRootViewController(animated: true)
     }
 
     @IBAction func editButtonTouched(_ sender: Any) {
-        self.taskMode = TaskWorkMode.TASK_WORK_MODE_EDIT.rawValue
+        self.taskMode = .edit
         self.editButton.isEnabled = false
         self.saveButton.isEnabled = true
         self.titleTextView.isEditable = true

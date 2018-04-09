@@ -33,13 +33,15 @@ class RSSParser: NSObject, XMLParserDelegate {
     
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         elemName = elementName
-        if elemName == BBC_RSS_XML_TAG_ITEM {
+        if elemName == BBCRssXmlTags.item {
             isInsideItem = true
             isElementEnd = true
             foundItem = NewsArticle()
         }
-        else if elemName == BBC_RSS_XML_TAG_MEDIATHUMBNAIL {
-            foundItem.thumbnail = URL.init(string: attributeDict["url"]!)
+        else if elemName == BBCRssXmlTags.mediaThumbnail {
+            if let urlAttribute = attributeDict["url"] {
+                foundItem.thumbnail = URL.init(string: urlAttribute)
+            }
         }
         else {
             isElementEnd = false
@@ -47,7 +49,7 @@ class RSSParser: NSObject, XMLParserDelegate {
     }
     
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == BBC_RSS_XML_TAG_ITEM {
+        if elementName == BBCRssXmlTags.item {
             isInsideItem = false
             rssArray.append(foundItem)
         }
@@ -58,21 +60,12 @@ class RSSParser: NSObject, XMLParserDelegate {
         if isInsideItem {
             if !isElementEnd {
                 let trimmedStr = string.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-                if elemName == BBC_RSS_XML_TAG_TITLE {
-                    foundItem.title = trimmedStr
-                }
-                else if elemName == BBC_RSS_XML_TAG_DESCRIPTION {
-                    foundItem.descript = trimmedStr
-                }
-                else if elemName == BBC_RSS_XML_TAG_LINK {
-                    foundItem.link = trimmedStr
-                }
-                else if elemName == BBC_RSS_XML_TAG_PUBDATE {
-                    let dtFormat = DateFormatter()
-                    dtFormat.dateFormat = BBC_RSS_XML_DATETIME_FORMAT
-                    dtFormat.timeZone = TimeZone.init(abbreviation: GMT_ABBREVIATION)
-                    let trimmedStrWithoutGMT = trimmedStr.substring(to: trimmedStr.index(trimmedStr.endIndex, offsetBy: -4))
-                    foundItem.pubDate = dtFormat.date(from: trimmedStrWithoutGMT)
+                switch elemName {
+                    case BBCRssXmlTags.title: foundItem.title = trimmedStr
+                    case BBCRssXmlTags.description: foundItem.descript = trimmedStr
+                    case BBCRssXmlTags.link: foundItem.link = trimmedStr
+                    case BBCRssXmlTags.pubDate: foundItem.pubDate = Date().getformatDateRSS(fromString: trimmedStr)
+                    default : break
                 }
             }
         }

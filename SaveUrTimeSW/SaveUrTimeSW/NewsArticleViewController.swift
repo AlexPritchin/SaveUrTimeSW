@@ -19,14 +19,20 @@ class NewsArticleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let dtFormat = DateFormatter()
-        dtFormat.dateFormat = NEWS_ARTICLE_VIEW_DATETIME_FORMAT
-        
-        self.titleLabel.text = self.articleToDisplay!.title
-        self.pubDateLabel.text = dtFormat.string(from: self.articleToDisplay!.pubDate!)
-        self.thumbnailImageView.image = UIImage.init(data: ImageWorker.getImageForUrl(webURL: self.articleToDisplay!.thumbnail!))
-        self.descriptionLabel.text = self.articleToDisplay!.descript
+        if let artToDisplay = articleToDisplay {
+            if let artToDisplayTtl = artToDisplay.title {
+                self.titleLabel.text = artToDisplayTtl
+            }
+            if let artToDisplaypPubDT = artToDisplay.pubDate {
+                self.pubDateLabel.text = Date().getformatString(fromDate: artToDisplaypPubDT, formatPlace: DateFormatPlace.newsArticleDetail)
+            }
+            if let artToDisplayThumb = artToDisplay.thumbnail {
+                self.thumbnailImageView.image = UIImage.init(data: ImageWorker.getImageForUrl(webURL: artToDisplayThumb))
+            }
+            if let artToDisplayDescr = artToDisplay.descript {
+                self.descriptionLabel.text = artToDisplayDescr
+            }
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -35,7 +41,11 @@ class NewsArticleViewController: UIViewController {
     }
     
     @IBAction func urlButtonTouched(_ sender: Any) {
-        UIApplication.shared.open(URL.init(string: self.articleToDisplay!.link!)!, options: [:], completionHandler:nil)
+        if let artToDisplay = articleToDisplay {
+            if let artToDisplayLnk = artToDisplay.link {
+                UIApplication.shared.open(URL.init(string: artToDisplayLnk)!, options: [:], completionHandler:nil)
+            }
+        }
     }
 
     /*

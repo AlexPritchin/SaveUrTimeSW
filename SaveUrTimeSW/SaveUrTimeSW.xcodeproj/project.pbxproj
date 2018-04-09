@@ -29,6 +29,7 @@
 		FA68344A206ABB3D001984F8 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA683449206ABB3D001984F8 /* Task.swift */; };
 		FA68344C206ABB75001984F8 /* TasksTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA68344B206ABB75001984F8 /* TasksTableViewController.swift */; };
 		FA68344E206ABBAA001984F8 /* TasksDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA68344D206ABBAA001984F8 /* TasksDetailViewController.swift */; };
+		FA9A929720790BB700BDC5E0 /* Date-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA9A929620790BB700BDC5E0 /* Date-Extension.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		FA683449206ABB3D001984F8 /* Task.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		FA68344B206ABB75001984F8 /* TasksTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksTableViewController.swift; sourceTree = "<group>"; };
 		FA68344D206ABBAA001984F8 /* TasksDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksDetailViewController.swift; sourceTree = "<group>"; };
+		FA9A929620790BB700BDC5E0 /* Date-Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Date-Extension.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,8 @@
 				FA574DEB20667CF4006D7C7B /* Constants.swift */,
 				FA574DE520667BB6006D7C7B /* News */,
 				FA574DE620667BBD006D7C7B /* Tasks */,
+				FA9A929920793DB000BDC5E0 /* UIClasses */,
+				FA9A92982079238300BDC5E0 /* Libraries */,
 				FA574DE320667B26006D7C7B /* Main.storyboard */,
 				FA574DD820667A56006D7C7B /* Assets.xcassets */,
 				FA574DDA20667A56006D7C7B /* LaunchScreen.storyboard */,
@@ -173,7 +177,6 @@
 			isa = PBXGroup;
 			children = (
 				FA683443206ABA28001984F8 /* TaskTableViewCell.swift */,
-				FA683445206ABA6D001984F8 /* PlaceholderTextView.swift */,
 			);
 			name = UIClasses;
 			sourceTree = "<group>";
@@ -201,6 +204,22 @@
 				FA68344D206ABBAA001984F8 /* TasksDetailViewController.swift */,
 			);
 			name = Controllers;
+			sourceTree = "<group>";
+		};
+		FA9A92982079238300BDC5E0 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				FA9A929620790BB700BDC5E0 /* Date-Extension.swift */,
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		FA9A929920793DB000BDC5E0 /* UIClasses */ = {
+			isa = PBXGroup;
+			children = (
+				FA683445206ABA6D001984F8 /* PlaceholderTextView.swift */,
+			);
+			name = UIClasses;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -294,6 +313,7 @@
 				FA574DFA206681FC006D7C7B /* NewsTableViewController.swift in Sources */,
 				FA683446206ABA6D001984F8 /* PlaceholderTextView.swift in Sources */,
 				FA574DF620668181006D7C7B /* ImageWorker.swift in Sources */,
+				FA9A929720790BB700BDC5E0 /* Date-Extension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

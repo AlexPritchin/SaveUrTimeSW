@@ -33,13 +33,19 @@ class NewsTableViewCell: UITableViewCell {
     }
     
     func loadData(articleForLoadData:NewsArticle){
-        let dtFormat = DateFormatter()
-        dtFormat.dateFormat = NEWS_CELL_DATETIME_FORMAT
-        
-        self.pubDateLabel.text = dtFormat.string(from: articleForLoadData.pubDate!)
-        self.titleLabel.text = articleForLoadData.title
+        guard let artForLoadDataPubDt = articleForLoadData.pubDate else{
+            return
+        }
+        self.pubDateLabel.text = Date().getformatString(fromDate: artForLoadDataPubDt, formatPlace: DateFormatPlace.newsCell)
+        guard let artForLoadDataTtl = articleForLoadData.title else {
+            return
+        }
+        self.titleLabel.text = artForLoadDataTtl
+        guard let artForLoadDataThumb = articleForLoadData.thumbnail else {
+            return
+        }
         DispatchQueue.global().async {
-            let image = UIImage.init(data: ImageWorker.getImageForUrl(webURL: articleForLoadData.thumbnail!))
+            let image = UIImage.init(data: ImageWorker.getImageForUrl(webURL: artForLoadDataThumb))
             DispatchQueue.main.async {
                 self.thumbnailImageView.image = image
             }

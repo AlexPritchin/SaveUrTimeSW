@@ -17,8 +17,14 @@ class RSSDownloader: NSObject {
     var delegate : RSSDownloaderDelegate?
     
     func getRssDataForParse(){
-        let downloadTask = URLSession.shared.dataTask(with: URL.init(string: BBC_RSS_URL)!, completionHandler:{(data, response, error) -> Void in
-            self.delegate?.didFinishRSSDownloading(rssData: data!)
+        let bbcUrl = URL.init(string: BBC_RSS_URL)
+        guard let bbcRssUrl = bbcUrl else {
+            return
+        }
+        let downloadTask = URLSession.shared.dataTask(with: bbcRssUrl, completionHandler:{(data, response, error) -> Void in
+            if let downloadedData = data {
+                self.delegate?.didFinishRSSDownloading(rssData: downloadedData)
+            }
             })
         downloadTask.resume()
     }

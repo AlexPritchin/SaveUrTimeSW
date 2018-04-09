@@ -12,6 +12,8 @@ class NewsTableViewController: UITableViewController, NewsDataWorkerDelegate {
 
     @IBOutlet var tableViewOutlet: UITableView!
     
+    private let NEWS_CELL_REUSABLE_IDENTIFIER = "NewsCell"
+    private let SEGUE_IDENTIFIER_FROM_NEWS_TABLE_TO_NEWS_ARTICLE = "ToNewsDetails"
     private var dataDownldActInd : UIActivityIndicatorView?
     private var newsArticlesArray : [NewsArticle]?
     
@@ -39,9 +41,11 @@ class NewsTableViewController: UITableViewController, NewsDataWorkerDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if newsArticlesArray == nil {
-            dataDownldActInd!.startAnimating()
+            if let dtDownldActInd = dataDownldActInd {
+                dtDownldActInd.startAnimating()
+            }
             let rssWorker = NewsDataWorker()
-            rssWorker.delegate = self;
+            rssWorker.delegate = self
             rssWorker.initializeData()
         }
     }
@@ -66,13 +70,15 @@ class NewsTableViewController: UITableViewController, NewsDataWorkerDelegate {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell : NewsTableViewCell? = tableView.dequeueReusableCell(withIdentifier: NEWS_CELL_REUSABLE_IDENTIFIER, for: indexPath) as? NewsTableViewCell
         
-        if cell == nil {
+        guard let notNilCell = cell else {
             return UITableViewCell()
         }
         
-        cell!.loadData(articleForLoadData: newsArticlesArray![indexPath.row])
+        if let newsArtArray = newsArticlesArray {
+            notNilCell.loadData(articleForLoadData: newsArtArray[indexPath.row])
+        }
 
-        return cell!
+        return notNilCell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -82,14 +88,19 @@ class NewsTableViewController: UITableViewController, NewsDataWorkerDelegate {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == SEGUE_IDENTIFIER_FROM_NEWS_TABLE_TO_NEWS_ARTICLE {
             let nArtViewContr : NewsArticleViewController = segue.destination as! NewsArticleViewController
-            nArtViewContr.articleToDisplay = newsArticlesArray![(sender as? IndexPath)!.row]
+            guard let newsArtArray = newsArticlesArray, let indPath = (sender as? IndexPath) else {
+                return
+            }
+            nArtViewContr.articleToDisplay = newsArtArray[indPath.row]
         }
     }
     
     func didFinishDataInitialization(rssDataArray : [NewsArticle]){
         newsArticlesArray = [NewsArticle]()
         newsArticlesArray = rssDataArray
-        dataDownldActInd!.stopAnimating()
+        if let dtDownldActInd = dataDownldActInd {
+            dtDownldActInd.stopAnimating()
+        }
         self.tableViewOutlet.reloadData()
     }
 
